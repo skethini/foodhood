@@ -45,8 +45,16 @@ export default function LoginScreen({ navigation }) {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Login" onPress={handleLogin} />
-      <Button title="Sign Up" onPress={() => navigation.navigate('SignUp')} />
+      <Button
+  title="Login"
+  onPress={handleLogin}
+  style={styles.loginButton}
+/>
+<Button
+  title="Sign Up"
+  onPress={() => navigation.navigate('SignUp')}
+  style={styles.signUpButton}
+/>
     </View>
   );
 }
@@ -69,5 +77,13 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderWidth: 1,
     borderRadius: 5,
+  },
+  loginButton: {
+    backgroundColor: 'sagegreen',
+    // other styling for the button
+  },
+  signUpButton: {
+    backgroundColor: 'sagegreen',
+    // other styling for the button
   },
 });

@@ -1,6 +1,6 @@
 // contexts/AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import firebase from '../firebaseConfig';
+import { auth } from '../firebaseConfig'; // Importing the 'auth' instance directly
 
 const AuthContext = createContext();
 
@@ -13,15 +13,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   function login(email, password) {
-    return firebase.auth().signInWithEmailAndPassword(email, password);
+    return auth.signInWithEmailAndPassword(email, password); // Using the 'auth' instance directly
   }
 
   function signOut() {
-    return firebase.auth().signOut();
+    return auth.signOut(); // Using the 'auth' instance directly
   }
 
   useEffect(() => {
-    const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+    const unsubscribe = auth.onAuthStateChanged(user => { // Using the 'auth' instance directly
       setCurrentUser(user);
       setLoading(false);
     });
