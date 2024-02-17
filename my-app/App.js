@@ -1,46 +1,48 @@
-import { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { StyleSheet } from 'react-native';
 
-import Button from './components/button.component';
-
+// Adjust imports based on your file structure
 import HomeScreen from './screens/home.screen';
-import DetailsScreen from './screens/details.screen';
 import LoginScreen from './screens/login.screen';
+import SignUpScreen from './screens/SignUp';
+import { auth } from './firebaseConfig'; // Ensure this import matches your Firebase config file
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsSignedIn(!!user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
         {isSignedIn ? (
-          // User is signed in
           <>
-            <Stack.Screen name='Home' component={HomeScreen} />
-            <Stack.Screen name='Details' component={DetailsScreen} />
-            {/* ... other screens ... */}
+            <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+            {/* Add other screens for signed-in users here */}
           </>
         ) : (
-          // User is not signed in, show the LoginScreen
-          <Stack.Screen
-            name='Login'
-            component={LoginScreen}
-            options={{
-              title: 'Login',
-              // When user is signed in, update the state
-              signIn: () => setIsSignedIn(true),
-            }}
-          />
+          // These screens are accessible when the user is not signed in
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login' }} />
+            <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Sign Up' }} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
+// Your StyleSheet definitions are correctly placed here
 const styles = StyleSheet.create({
   container: {
     flex: 1,

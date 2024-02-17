@@ -1,73 +1,73 @@
 import React, { useState } from 'react';
-import { TextInput, Button, View, Text, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { StyleSheet, View, TextInput, Button, Alert, Text } from 'react-native';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
-export default function Login() {
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
+  const auth = getAuth();
 
-  async function handleSubmit() {
-    try {
-      setError('');
-      setLoading(true);
-      // Implement your login logic here
-      // If successful:
-      navigation.navigate('Home'); // Adjust as needed
-    } catch {
-      setError('Failed to log in');
-      setLoading(false);
-    }
-  }
+  const handleSignUp = () => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed up
+        navigation.navigate('Home');
+      })
+      .catch((error) => {
+        Alert.alert("Registration Error", error.message);
+      });
+  };
+
+  const handleLogin = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in
+        navigation.navigate('Home');
+      })
+      .catch((error) => {
+        Alert.alert("Login Error", error.message);
+      });
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log In</Text>
-      {error && <Text style={styles.error}>{error}</Text>}
+      <Text style={styles.title}>Welcome</Text>
       <TextInput
         style={styles.input}
-        onChangeText={setEmail}
         placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
         value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
-        onChangeText={setPassword}
         placeholder="Password"
         secureTextEntry
         value={password}
+        onChangeText={setPassword}
       />
-      <Button title="Log In" onPress={handleSubmit} disabled={loading} />
+      <Button title="Login" onPress={handleLogin} />
+      <Button title="Sign Up" onPress={() => navigation.navigate('SignUp')} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      justifyContent: 'center',
-      padding: 20,
-    },
-    title: {
-      fontSize: 24,
-      marginBottom: 20,
-      textAlign: 'center',
-    },
-    input: {
-      marginBottom: 10,
-      paddingHorizontal: 15,
-      height: 50,
-      borderColor: 'gray',
-      borderWidth: 1,
-      borderRadius: 5,
-    },
-    error: {
-      color: 'red',
-      marginBottom: 10,
-    },
-    // Add styles for your buttons and any other elements
-  });
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    marginBottom: 10,
+    paddingHorizontal: 15,
+    height: 50,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+});
