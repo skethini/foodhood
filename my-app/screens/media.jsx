@@ -94,14 +94,11 @@ const SocialMediaPage = () => {
         const snapshot = await uploadBytes(imageRef, await fetch(imageUri));
         const downloadURL = await getDownloadURL(snapshot.ref);
 
-        // Add the photo to Firestore
         const photosCollection = collection(db, 'photos');
         await addDoc(photosCollection, { userId: auth.currentUser.uid, imageUrl: downloadURL });
 
-        // Clear the imageUri statex
         setImageUri(null);
 
-        // Fetch the updated photos
         fetchPhotos();
       }
     } catch (error) {
