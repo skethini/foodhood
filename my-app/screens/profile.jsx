@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { doc, getDoc } from "firebase/firestore";
+import { View, Text, Image, StyleSheet, Button } from 'react-native';
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { db } from '../firebaseConfig'; // Import the Firestore instance
+import { UserInfo } from 'firebase/auth';
 
 const Profile = ({ userId }) => {
+  
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState('');
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
@@ -25,6 +29,25 @@ const Profile = ({ userId }) => {
     return <Text>Loading profile...</Text>;
   }
 
+  const handleInputChange = (event) => {
+    setNewItem(onchange.target.value);
+  };
+
+  const handleAddItem = async () => {
+    try {
+      await setDoc(doc(getFirestore(), "inventories", userId), {
+        userId,
+        items,
+      }, { merge: true });
+      setMyList([...myList, newItem]);
+      setNewItem('');
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Add Item Error", error.message);
+    }
+  }
+
+
   return (
     <View style={styles.container}>
       {profile.imageUrl && (
@@ -32,7 +55,16 @@ const Profile = ({ userId }) => {
       )}
       <Text style={styles.name}>{profile.name}</Text>
       <Text style={styles.bio}>{profile.bio}</Text>
+      <Text style={styles.title}>Add to Inventory</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="New Item"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <Button title="Add Item" onPress={handleAddItem} />
     </View>
+
   );
 };
 
@@ -60,4 +92,7 @@ const styles = StyleSheet.create({
   },
 });
 
+
+
 export default Profile;
+
