@@ -54,7 +54,7 @@ export default function SignUpAndCreateProfile() {
       const user = userCredential.user;
       const userId = user.uid;
       const storage = getStorage();
-      const imagePath = 'profileImages/${userUid}';
+      const imagePath = `profileImages/${userId}`;
       const storageRef = ref(storage, imagePath);
       const imgResponse = await fetch(image);
       const imgBlob = await imgResponse.blob();
@@ -62,7 +62,7 @@ export default function SignUpAndCreateProfile() {
       await uploadBytes(storageRef, imgBlob);
       const imageUrl = await getDownloadURL(storageRef);
 
-      await setDoc(doc(getFirestore(), "users", userUid), {
+      await setDoc(doc(getFirestore(), "users", userId), {
         name,
         bio,
         imageUrl,

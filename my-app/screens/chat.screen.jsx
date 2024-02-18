@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Button } from 'react-native';
-import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-import { getAuth, signOut } from 'firebase/auth'; // Import signOut for logout functionality
+import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Button, Image, Platform, Alert } from 'react-native';
+import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { getAuth, signOut } from 'firebase/auth';
 
 const ChatScreen = ({ navigation }) => {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([]);
+  const [currentUserProfile, setCurrentUserProfile] = useState({});
   const db = getFirestore();
   const auth = getAuth();
   const currentUser = auth.currentUser;
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (currentUser) {
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          setCurrentUserProfile(userDocSnap.data());
+        } else {
+          console.log("No such document!");
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [currentUser]); // Re-run when currentUser changes
 
   useEffect(() => {
     const messagesCollectionRef = collection(db, 'groupMessages');
@@ -26,10 +43,12 @@ const ChatScreen = ({ navigation }) => {
   }, []);
 
   const handleSend = async () => {
-    if (inputText.trim()) {
+    if (inputText.trim() && currentUser) {
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
         sender: currentUser.email,
+        senderName: currentUserProfile.name, // Use the fetched name
+        senderProfilePic: currentUserProfile.imageUrl, // Use the fetched profile picture URL
         groupId: 'your-group-id',
         timestamp: new Date(),
       });
@@ -40,9 +59,10 @@ const ChatScreen = ({ navigation }) => {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigation.navigate('Login'); // Make sure 'Login' matches the name used in your Stack.Navigator
+      navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
     } catch (error) {
       console.error("Logout error:", error);
+      Alert.alert("Logout Error", error.message);
     }
   };
 
@@ -54,8 +74,14 @@ const ChatScreen = ({ navigation }) => {
         data={messages}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View style={styles.messageBubble(item.sender === currentUser.email)}>
-            <Text style={styles.messageText}>{item.text}</Text>
+          <View style={styles.messageContainer}>
+            {item.senderProfilePic && (
+              <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
+            )}
+            <View style={styles.messageBubble(item.sender === currentUser.email)}>
+              <Text style={styles.senderName}>{item.senderName}</Text>
+              <Text style={styles.messageText}>{item.text}</Text>
+            </View>
           </View>
         )}
         contentContainerStyle={styles.messagesList}
@@ -75,7 +101,6 @@ const ChatScreen = ({ navigation }) => {
   );
 };
 
-// Adjust styles as necessary
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -87,7 +112,7 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 8,
+    padding: 4, // Adjusted padding
     borderTopWidth: 1,
     borderTopColor: '#ccc',
     backgroundColor: '#fff',
@@ -110,15 +135,30 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#fff',
   },
+  messageContainer: {
+    flexDirection: 'row',
+    marginVertical: 4,
+    alignItems: 'center',
+  },
+  profilePic: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+  },
   messageBubble: isCurrentUser => ({
     backgroundColor: isCurrentUser ? '#007bff' : '#f1f0f0',
     padding: 10,
     borderRadius: 20,
-    marginVertical: 4,
     alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
   }),
   messageText: {
-    color: '#fff',
+    color: '#000', // Adjusted for visibility
+  },
+  senderName: {
+    fontWeight: 'bold',
+    color: '#000', // Adjust as needed
+    marginBottom: 2,
   },
 });
 
