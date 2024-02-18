@@ -17,7 +17,6 @@ const SocialMediaPage = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      // Assuming you have a "users" collection in Firestore with user data
       const userDocRef = doc(collection(db, 'users'), auth.currentUser.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -29,36 +28,24 @@ const SocialMediaPage = () => {
     };
 
     fetchUser();
-    fetchPhotos(); // Fetch existing photos
+    fetchPhotos(); 
   }, []);
 
 
   const fetchPhotos = async () => {
     try {
       const storage = getStorage();
-  
-      // Assuming you have a reference to the 'images' folder in Firebase Storage
       const imagesFolderRef = ref(storage, 'images');
-  
-      // List all items (images) in the 'images' folder
       const items = await listAll(imagesFolderRef);
-  
-      // Initialize an empty array to store photo data
       const photosData = [];
-  
-      // Iterate over each item in the 'images' folder
       for (const item of items.items) {
         try {
           const downloadURL = await getDownloadURL(item);
-  
-          // Assuming you have a unique identifier for each image (e.g., the item's name)
           photosData.push({ id: item.name, imageUrl: downloadURL });
         } catch (error) {
           console.error('Error getting download URL:', error);
         }
       }
-  
-      // Set the state with the collected photo data
       setPhotos(photosData);
   
     } catch (error) {

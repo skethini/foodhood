@@ -1,12 +1,10 @@
-import React, { useId, useState } from 'react';
+import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, Alert, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { useNavigation } from '@react-navigation/native';
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
-import { User } from 'firebase/auth';
-import { Auth } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
 export default function SignUpAndCreateProfile() {
@@ -48,7 +46,6 @@ export default function SignUpAndCreateProfile() {
 
   const handleProfileSetup = async () => {
     try {
-
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       const userId = user.uid;
@@ -57,9 +54,6 @@ export default function SignUpAndCreateProfile() {
       const storageRef = ref(storage, imagePath);
       const imgResponse = await fetch(image);
       const imgBlobs = await imgResponse.blob();
-
-      //const imgBlobs = await FileSystem.readAsStringAsync(image, { encoding:  FileSystem.EncodingType.Base64}); // FileSystem.EncodingType.Base64
-      //const ingBlobForUpload = await fetch(`data:image/jpeg;base64,${imgBlob}`).them((res) => res.blob());
       
       await uploadBytes(storageRef, imgBlobs);
       const imageUrl = await getDownloadURL(storageRef);
@@ -69,7 +63,6 @@ export default function SignUpAndCreateProfile() {
         bio,
         imageUrl,
         zipCode,
-
       }, { merge: true });
 
       Alert.alert("Profile Created", "Your profile has been successfully created!", [
@@ -114,16 +107,16 @@ export default function SignUpAndCreateProfile() {
             value={zipCode}
             onChangeText={setZipCode}
           />
-          <Button title="Next" onPress={handleSignUp} />
+          <Button title="Next" onPress={handleSignUp} color="#4CAF50" />
         </>
       )}
       {step === 2 && (
         <>
           <TextInput placeholder="Name" value={name} onChangeText={setName} style={styles.input} />
           <TextInput placeholder="Bio" value={bio} onChangeText={setBio} style={styles.input} multiline />
-          <Button title="Pick an Image" onPress={pickImage} />
+          <Button title="Pick an Image" onPress={pickImage} color="#4CAF50" />
           {image && <Image source={{ uri: image }} style={styles.profileImage} />}
-          <Button title="Complete Profile" onPress={handleProfileSetup} />
+          <Button title="Complete Profile" onPress={handleProfileSetup} color="#4CAF50" />
         </>
       )}
     </View>
@@ -136,17 +129,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#F0F8F7', // Light grey background
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
     textAlign: 'center',
+    color: '#4CAF50',
   },
   input: {
     width: '100%',
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: '#4CAF50',
     borderRadius: 5,
     padding: 10,
   },

@@ -31,7 +31,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome</Text>
+      <Text style={styles.title}>Welcome to <Text style={{fontWeight: 'bold'}}>NeighborNom</Text></Text>
       <TextInput
         style={styles.input}
         placeholder="Email"
@@ -45,16 +45,18 @@ export default function LoginScreen({ navigation }) {
         value={password}
         onChangeText={setPassword}
       />
-      <Button
-  title="Login"
-  onPress={handleLogin}
-  style={styles.loginButton}
-/>
-<Button
-  title="Sign Up"
-  onPress={() => navigation.navigate('SignUp')}
-  style={styles.signUpButton}
-/>
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Login"
+          onPress={handleLogin}
+          color="#4CAF50"
+        />
+        <Button
+          title="Sign Up"
+          onPress={() => navigation.navigate('SignUp')}
+          color="#4CAF50"
+        />
+      </View>
     </View>
   );
 }
@@ -63,27 +65,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F0F8F7', // Soft matcha tint background
     padding: 20,
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
     textAlign: 'center',
+    color: '#4CAF50', // Matcha green
   },
   input: {
     marginBottom: 10,
     paddingHorizontal: 15,
     height: 50,
-    borderColor: 'gray',
+    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
+    width: '100%',
   },
-  loginButton: {
-    backgroundColor: 'sagegreen',
-    // other styling for the button
-  },
-  signUpButton: {
-    backgroundColor: 'sagegreen',
-    // other styling for the button
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
 });

@@ -37,7 +37,6 @@ const ChatScreen = ({ navigation }) => {
   await updateDoc(messageRef, {
     acceptedBy: arrayUnion(auth.currentUser.uid)
   }).then(() => {
-    // Update local state to reflect the acceptance
     setAcceptedRequests(prevState => ({ ...prevState, [messageId]: true }));
     Alert.alert("Request Accepted", "You have accepted the request.");
   }).catch((error) => {
@@ -125,17 +124,20 @@ const ChatScreen = ({ navigation }) => {
         )}
         <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
-          {item.type === 'request' && !hasAccepted ? (
-            <TouchableOpacity onPress={() => handleAcceptRequest(item.id)} style={styles.acceptButton}>
-              <Text style={styles.acceptButtonText}>Accept</Text>
-            </TouchableOpacity>
-          ) : (
-            <Text style={styles.acceptedText}>Request Accepted</Text> // Indicate the request is accepted
-          )}
+          {item.type === 'request' ? (
+            !hasAccepted ? (
+              <TouchableOpacity onPress={() => handleAcceptRequest(item.id)} style={styles.acceptButton}>
+                <Text style={styles.acceptButtonText}>Accept</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={styles.acceptedText}>Request Accepted</Text>
+            )
+          ) : null}
         </View>
       </View>
     );
   };
+  
   
 
   const renderRequestModal = () => (
@@ -176,6 +178,9 @@ const ChatScreen = ({ navigation }) => {
       style={styles.container}
     >
       {renderRequestModal()}
+      <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.profileButton}>
+      <Text style={styles.profileButtonText}> Home</Text>
+    </TouchableOpacity>
       <FlatList
         data={messages}
         keyExtractor={item => item.id}
@@ -203,13 +208,13 @@ const ChatScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F8F7', // Soft matcha tint background
+    backgroundColor: '#F0F8F7', 
   },
   messageContainer: {
     flexDirection: 'row',
     padding: 4,
     marginVertical: 2,
-    justifyContent: 'flex-start', // Default alignment
+    justifyContent: 'flex-start', 
   },
   messageRight: {
     justifyContent: 'flex-end',
@@ -225,12 +230,12 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
   },
   currentUserBubble: {
-    backgroundColor: '#64A88C', // Adjust the color as needed
+    backgroundColor: '#64A88C', 
     alignSelf: 'flex-end',
     marginRight: 10,
   },
   otherUserBubble: {
-    backgroundColor: '#CFE8E2', // Adjust the color as needed
+    backgroundColor: '#CFE8E2', 
     alignSelf: 'flex-start',
     marginLeft: 10,
   },
@@ -240,26 +245,26 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginRight: 8,
     borderWidth: 2,
-    borderColor: '#DDFEE7', // Light matcha border for profile pics
+    borderColor: '#DDFEE7', 
   },
   messageText: {
-    color: '#2E4239', // Dark matcha green for text, improving readability
+    color: '#2E4239', 
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 10,
     marginBottom: 10,
-    backgroundColor: '#FFFFFF', // Optional: for contrast against container background
+    backgroundColor: '#FFFFFF', 
   },
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    marginHorizontal: 8, // Space between input and buttons
-    borderRadius: 20, // Rounded corners for the input field
-    fontSize: 16, // Adjust font size as necessary
+    marginHorizontal: 8, 
+    borderRadius: 20, 
+    fontSize: 16, 
   },
   addButton: {
     justifyContent: 'center',
@@ -287,7 +292,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)', // Semi-transparent overlay for modals
+    backgroundColor: 'rgba(0,0,0,0.4)', 
   },
   modalView: {
     margin: 20,
@@ -305,26 +310,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
-    borderRadius: 10, // Rounded corners for input fields
-    backgroundColor: '#FFFFFF', // Keeping modal inputs neutral
+    borderRadius: 10,
+    backgroundColor: '#FFFFFF', 
   },
   messagesList: {
     paddingVertical: 10,
   },
   acceptButton: {
-    backgroundColor: '#76A478', // Matcha shade for accept buttons
+    backgroundColor: '#76A478', 
     padding: 10,
     borderRadius: 20,
     marginRight: 8,
   },
   acceptButtonDisabled: {
-    backgroundColor: '#CCDCCB', // Greyed-out matcha for disabled state
+    backgroundColor: '#CCDCCB', 
   },
   acceptButtonText: {
     color: '#FFFFFF',
   },
   acceptedText: {
-    color: '#4E805D', // Dark matcha for accepted text
+    color: '#4E805D', 
   },
 });
 
