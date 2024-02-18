@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, Text, KeyboardAvoidingView, Button, Image, Platform, Alert, Modal } from 'react-native';
-import { StyleSheet } from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Text,
+  KeyboardAvoidingView,
+  Button,
+  Image,
+  Platform,
+  Alert,
+  Modal,
+  StyleSheet
+} from 'react-native';
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { getAuth, signOut } from 'firebase/auth';
-import { Ionicons } from '@expo/vector-icons'; // Ensure you have @expo/vector-icons installed
 
 const ChatScreen = ({ navigation }) => {
   const [inputText, setInputText] = useState('');
@@ -66,8 +77,9 @@ const ChatScreen = ({ navigation }) => {
 
   const handleSendRequest = async () => {
     if (item.trim() && quantity.trim() && currentUser) {
+      const requestText = `${transactionType.toUpperCase()}: ${item}, Quantity: ${quantity}`;
       await addDoc(collection(db, 'groupMessages'), {
-        text: `${transactionType.toUpperCase()}: ${item}, Quantity: ${quantity}`,
+        text: requestText,
         sender: currentUser.email,
         senderName: currentUserProfile.name,
         senderProfilePic: currentUserProfile.imageUrl,
@@ -79,6 +91,9 @@ const ChatScreen = ({ navigation }) => {
       setItem('');
       setQuantity('');
       setModalVisible(false);
+      Alert.alert('Request Sent', 'Your request has been sent successfully.');
+    } else {
+      Alert.alert('Error', 'Please fill in all the fields.');
     }
   };
 
@@ -99,81 +114,64 @@ const ChatScreen = ({ navigation }) => {
   };
 
   const renderMessageItem = ({ item }) => {
-    if (item.type === 'action') {
-      return (
-        <View style={styles.messageContainer}>
-          {/* Add logic to handle action messages differently if needed */}
-          <Text style={styles.messageText}>{item.text}</Text>
-        </View>
-      );
-    } else if (item.type === 'request') {
-      const isAccepted = item.acceptedBy && item.acceptedBy.includes(currentUser.uid);
-      return (
-        <View style={styles.messageContainer}>
-          {!isAccepted && (
-            <TouchableOpacity
-              onPress={() => handleAcceptRequest(item.id)}
-              style={[styles.acceptButton, isAccepted && styles.acceptButtonDisabled]}
-              disabled={isAccepted}
-            >
-              <Text style={styles.acceptButtonText}>Accept</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.messageText, isAccepted && styles.acceptedText]}>{item.text}</Text>
-        </View>
-      );
-    }
     const isCurrentUser = item.sender === currentUser.email;
+    const messageAlignment = isCurrentUser ? styles.messageRight : styles.messageLeft;
     return (
-      <View style={[styles.messageContainer, isCurrentUser ? styles.messageRight : styles.messageLeft]}>
-        {!isCurrentUser && item.senderProfilePic && (
-          <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.senderId })}>
-            <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
-          </TouchableOpacity>
-        )}
+      <View style={[styles.messageContainer, messageAlignment]}>
         <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
         </View>
       </View>
     );
   };
-  // Inside the ChatScreen component
-const handleLogout = async () => {
-  try {
-    await signOut(auth);
-    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
-  } catch (error) {
-    console.error("Logout error:", error);
-    Alert.alert("Logout Error", error.message);
-  }
-};
 
   const renderRequestModal = () => (
     <Modal
       animationType="slide"
       transparent={true}
       visible={modalVisible}
-      onRequestClose={() => {
-        setModalVisible(!modalVisible);
-      }}>
+      onRequestClose={() => setModalVisible(!modalVisible)}
+    >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <TextInput placeholder="Item" value={item} onChangeText={setItem} style={styles.modalInput} />
-          <TextInput placeholder="Quantity" value={quantity} keyboardType="numeric" onChangeText={setQuantity} style={styles.modalInput} />
-          <Button title="Request" onPress={handleSendRequest} />
+          <TextInput
+            placeholder="Item"
+            value={item}
+            onChangeText={setItem}
+            style={styles.modalInput}
+          />
+          <TextInput
+            placeholder="Quantity"
+            value={quantity}
+            keyboardType="numeric"
+            onChangeText={setQuantity}
+            style={styles.modalInput}
+          />
+          <Button title="Send Request" onPress={handleSendRequest} />
         </View>
       </View>
     </Modal>
   );
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <Button
-        title="Go to Profile" onPress={() => navigation.navigate('Profile')} style={styles.button}/>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
       {renderRequestModal()}
-      <FlatList data={messages} keyExtractor={item => item.id} renderItem={renderMessageItem} contentContainerStyle={styles.messagesList} />
+      <FlatList
+        data={messages}
+        keyExtractor={item => item.id}
+        renderItem={renderMessageItem}
+        contentContainerStyle={styles.messagesList}
+      />
       <View style={styles.inputContainer}>
-        <TextInput value={inputText} onChangeText={setInputText} placeholder="Type your message here..." style={styles.input} />
+        <TextInput
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder="Type your message here..."
+          style={styles.input}
+        />
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
           <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
@@ -181,9 +179,6 @@ const handleLogout = async () => {
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.profileNavButton}>
-        <Ionicons name="arrow-forward-circle" size={30} color="#007bff" />
-      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
@@ -191,73 +186,91 @@ const handleLogout = async () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    padding: 10,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    marginRight: 8,
-    borderRadius: 20,
-  },
-  sendButton: {
-    padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 20,
-  },
-  addButton: {
-    padding: 10,
-    marginRight: 8,
-  },
-  addButtonText: {
-    color: '#007bff',
-    fontSize: 16,
-  },
-  sendButtonText: {
-    color: '#fff',
+    backgroundColor: '#F0F8F7', // Soft matcha tint background
   },
   messageContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    padding: 4,
+    marginVertical: 2,
+    justifyContent: 'flex-start', // Default alignment
+  },
+  messageRight: {
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  messageLeft: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    padding: 8,
+    borderRadius: 16,
+    maxWidth: '80%',
+  },
+  currentUserBubble: {
+    backgroundColor: '#64A88C', // Adjust the color as needed
+    alignSelf: 'flex-end',
+    marginRight: 10,
+  },
+  otherUserBubble: {
+    backgroundColor: '#CFE8E2', // Adjust the color as needed
+    alignSelf: 'flex-start',
+    marginLeft: 10,
   },
   profilePic: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 8,
-  },
-  messageBubble: {
-    flex: 1,
-    backgroundColor: '#f1f0f0',
-    padding: 10,
-    borderRadius: 20,
-  },
-  currentUserBubble: {
-    backgroundColor: '#007bff',
-    alignSelf: 'flex-end',
-  },
-  otherUserBubble: {
-    backgroundColor: '#f1f0f0',
-    alignSelf: 'flex-start',
+    borderWidth: 2,
+    borderColor: '#DDFEE7', // Light matcha border for profile pics
   },
   messageText: {
-    color: '#000',
+    color: '#2E4239', // Dark matcha green for text, improving readability
   },
-  senderName: {
-    fontWeight: 'bold',
-    marginBottom: 2,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    marginBottom: 10,
+    backgroundColor: '#FFFFFF', // Optional: for contrast against container background
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginHorizontal: 8, // Space between input and buttons
+    borderRadius: 20, // Rounded corners for the input field
+    fontSize: 16, // Adjust font size as necessary
+  },
+  addButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#A8D5BA',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+  },
+  sendButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#81C784',
+    borderRadius: 20,
+    width: 60,
+    height: 60,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
   },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 22,
+    backgroundColor: 'rgba(0,0,0,0.4)', // Semi-transparent overlay for modals
   },
   modalView: {
     margin: 20,
@@ -266,12 +279,7 @@ const styles = StyleSheet.create({
     padding: 35,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
     elevation: 5,
   },
   modalInput: {
@@ -280,24 +288,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
+    borderRadius: 10, // Rounded corners for input fields
+    backgroundColor: '#FFFFFF', // Keeping modal inputs neutral
   },
   messagesList: {
     paddingVertical: 10,
   },
   acceptButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#76A478', // Matcha shade for accept buttons
     padding: 10,
     borderRadius: 20,
     marginRight: 8,
   },
   acceptButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#CCDCCB', // Greyed-out matcha for disabled state
   },
   acceptButtonText: {
-    color: '#fff',
+    color: '#FFFFFF',
   },
   acceptedText: {
-    color: '#007bff',
+    color: '#4E805D', // Dark matcha for accepted text
   },
 });
 
