@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Button, Image, Platform, Alert, Modal } from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, Text, KeyboardAvoidingView, Button, Image, Platform, Alert, Modal } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
 import { getAuth, signOut } from 'firebase/auth';
+import { Ionicons } from '@expo/vector-icons'; // Ensure you have @expo/vector-icons installed
 
 const ChatScreen = ({ navigation }) => {
   const [inputText, setInputText] = useState('');
@@ -28,9 +30,8 @@ const ChatScreen = ({ navigation }) => {
         }
       }
     };
-
     fetchUserProfile();
-  }, [currentUser]); // Re-run when currentUser changes
+  }, [currentUser]);
 
   useEffect(() => {
     const messagesCollectionRef = collection(db, 'groupMessages');
@@ -40,9 +41,9 @@ const ChatScreen = ({ navigation }) => {
       const messagesData = snapshot.docs.map(doc => ({
         ...doc.data(),
         id: doc.id,
-        type: doc.data().type || 'text' // Default to 'text' if type is not specified
-      }));
-      setMessages(messagesData.reverse());
+        type: doc.data().type || 'text'
+      })).reverse();
+      setMessages(messagesData);
     });
 
     return () => unsubscribe();
@@ -53,11 +54,11 @@ const ChatScreen = ({ navigation }) => {
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
         sender: currentUser.email,
-        senderName: currentUserProfile.name, // Use the fetched name
-        senderProfilePic: currentUserProfile.imageUrl, // Use the fetched profile picture URL
+        senderName: currentUserProfile.name,
+        senderProfilePic: currentUserProfile.imageUrl,
         groupId: 'your-group-id',
         timestamp: new Date(),
-        type: 'text' // Specify message type as 'text'
+        type: 'text'
       });
       setInputText('');
     }
@@ -68,12 +69,12 @@ const ChatScreen = ({ navigation }) => {
       await addDoc(collection(db, 'groupMessages'), {
         text: `${transactionType.toUpperCase()}: ${item}, Quantity: ${quantity}`,
         sender: currentUser.email,
-        senderName: currentUserProfile.name, // Use the fetched name
-        senderProfilePic: currentUserProfile.imageUrl, // Use the fetched profile picture URL
+        senderName: currentUserProfile.name,
+        senderProfilePic: currentUserProfile.imageUrl,
         groupId: 'your-group-id',
         timestamp: new Date(),
-        type: 'request', // Specify message type as 'request'
-        acceptedBy: [] // Initialize acceptedBy array
+        type: 'request',
+        acceptedBy: []
       });
       setItem('');
       setQuantity('');
@@ -82,14 +83,11 @@ const ChatScreen = ({ navigation }) => {
   };
 
   const handleAcceptRequest = async (id) => {
-    // Get the current message document
     const messageRef = doc(db, 'groupMessages', id);
     const messageDoc = await getDoc(messageRef);
     if (messageDoc.exists()) {
       const data = messageDoc.data();
-      // Check if the current user has already accepted the request
       if (!data.acceptedBy.includes(currentUser.uid)) {
-        // Update the message document to mark it as accepted by the current user
         await updateDoc(messageRef, {
           acceptedBy: arrayUnion(currentUser.uid)
         });
@@ -101,43 +99,17 @@ const ChatScreen = ({ navigation }) => {
   };
 
   const renderMessageItem = ({ item }) => {
-    if (item.type === 'action') {
-      return (
-        <View style={styles.messageContainer}>
-          {/* Add logic to handle action messages differently if needed */}
-          <Text style={styles.messageText}>{item.text}</Text>
-        </View>
-      );
-    } else if (item.type === 'request') {
-      const isAccepted = item.acceptedBy && item.acceptedBy.includes(currentUser.uid);
-      return (
-        <View style={styles.messageContainer}>
-          {!isAccepted && (
-            <TouchableOpacity
-              onPress={() => handleAcceptRequest(item.id)}
-              style={[styles.acceptButton, isAccepted && styles.acceptButtonDisabled]}
-              disabled={isAccepted}
-            >
-              <Text style={styles.acceptButtonText}>Accept</Text>
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.messageText, isAccepted && styles.acceptedText]}>{item.text}</Text>
-        </View>
-      );
-    }
     const isCurrentUser = item.sender === currentUser.email;
     return (
       <View style={[styles.messageContainer, isCurrentUser ? styles.messageRight : styles.messageLeft]}>
         {!isCurrentUser && item.senderProfilePic && (
-          <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
+          <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.senderId })}>
+            <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
+          </TouchableOpacity>
         )}
         <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
-          {!isCurrentUser && <Text style={styles.senderName}>{item.senderName}</Text>}
           <Text style={styles.messageText}>{item.text}</Text>
         </View>
-        {isCurrentUser && currentUserProfile.imageUrl && (
-          <Image source={{ uri: currentUserProfile.imageUrl }} style={styles.profilePic} />
-        )}
       </View>
     );
   };
@@ -152,19 +124,8 @@ const ChatScreen = ({ navigation }) => {
       }}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <TextInput
-            placeholder="Item"
-            value={item}
-            onChangeText={setItem}
-            style={styles.modalInput}
-          />
-          <TextInput
-            placeholder="Quantity"
-            value={quantity}
-            keyboardType="numeric"
-            onChangeText={setQuantity}
-            style={styles.modalInput}
-          />
+          <TextInput placeholder="Item" value={item} onChangeText={setItem} style={styles.modalInput} />
+          <TextInput placeholder="Quantity" value={quantity} keyboardType="numeric" onChangeText={setQuantity} style={styles.modalInput} />
           <Button title="Request" onPress={handleSendRequest} />
         </View>
       </View>
@@ -174,26 +135,19 @@ const ChatScreen = ({ navigation }) => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       {renderRequestModal()}
-      <FlatList
-        data={messages}
-        keyExtractor={item => item.id}
-        renderItem={renderMessageItem}
-        contentContainerStyle={styles.messagesList}
-      />
+      <FlatList data={messages} keyExtractor={item => item.id} renderItem={renderMessageItem} contentContainerStyle={styles.messagesList} />
       <View style={styles.inputContainer}>
-        <TextInput
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="Type your message here..."
-          style={styles.input}
-        />
+        <TextInput value={inputText} onChangeText={setInputText} placeholder="Type your message here..." style={styles.input} />
         <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
-          <Text style={styles.addButtonText}>Request</Text>
+          <Text style={styles.addButtonText}>+</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
+      <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={styles.profileNavButton}>
+        <Ionicons name="arrow-forward-circle" size={30} color="#007bff" />
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
