@@ -49,16 +49,6 @@ const HomeScreen = ({ navigation }) => {
 
 export default HomeScreen;
 
-const handleLogout = async () => {
-  try {
-    await signOut(auth);
-    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
-  } catch (error) {
-    console.error("Logout error:", error);
-    Alert.alert("Logout Error", error.message);
-  }
-};
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
