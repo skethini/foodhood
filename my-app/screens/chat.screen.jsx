@@ -99,6 +99,30 @@ const ChatScreen = ({ navigation }) => {
   };
 
   const renderMessageItem = ({ item }) => {
+    if (item.type === 'action') {
+      return (
+        <View style={styles.messageContainer}>
+          {/* Add logic to handle action messages differently if needed */}
+          <Text style={styles.messageText}>{item.text}</Text>
+        </View>
+      );
+    } else if (item.type === 'request') {
+      const isAccepted = item.acceptedBy && item.acceptedBy.includes(currentUser.uid);
+      return (
+        <View style={styles.messageContainer}>
+          {!isAccepted && (
+            <TouchableOpacity
+              onPress={() => handleAcceptRequest(item.id)}
+              style={[styles.acceptButton, isAccepted && styles.acceptButtonDisabled]}
+              disabled={isAccepted}
+            >
+              <Text style={styles.acceptButtonText}>Accept</Text>
+            </TouchableOpacity>
+          )}
+          <Text style={[styles.messageText, isAccepted && styles.acceptedText]}>{item.text}</Text>
+        </View>
+      );
+    }
     const isCurrentUser = item.sender === currentUser.email;
     return (
       <View style={[styles.messageContainer, isCurrentUser ? styles.messageRight : styles.messageLeft]}>
@@ -113,6 +137,16 @@ const ChatScreen = ({ navigation }) => {
       </View>
     );
   };
+  // Inside the ChatScreen component
+const handleLogout = async () => {
+  try {
+    await signOut(auth);
+    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
+  } catch (error) {
+    console.error("Logout error:", error);
+    Alert.alert("Logout Error", error.message);
+  }
+};
 
   const renderRequestModal = () => (
     <Modal
@@ -134,6 +168,8 @@ const ChatScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+      <Button
+        title="Go to Profile" onPress={() => navigation.navigate('Profile')} style={styles.button}/>
       {renderRequestModal()}
       <FlatList data={messages} keyExtractor={item => item.id} renderItem={renderMessageItem} contentContainerStyle={styles.messagesList} />
       <View style={styles.inputContainer}>
