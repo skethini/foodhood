@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Button, Image, Platform, Alert } from 'react-native';
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc } from 'firebase/firestore';

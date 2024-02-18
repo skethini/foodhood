@@ -11,7 +11,7 @@ export default function LoginScreen({ navigation }) {
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed up
-        navigation.navigate('chat.screen');
+        navigation.navigate('Profile');
       })
       .catch((error) => {
         Alert.alert("Registration Error", error.message);
@@ -22,7 +22,7 @@ export default function LoginScreen({ navigation }) {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         // Signed in
-        navigation.navigate('chat.screen');
+        navigation.navigate('Profile');
       })
       .catch((error) => {
         Alert.alert("Login Error", error.message);

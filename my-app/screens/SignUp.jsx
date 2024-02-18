@@ -69,7 +69,7 @@ export default function SignUpAndCreateProfile() {
       }, { merge: true });
 
       Alert.alert("Profile Created", "Your profile has been successfully created!", [
-        { text: "OK", onPress: () => navigation.navigate('Home') }
+        { text: "OK", onPress: () => navigation.navigate('Profile') }
       ]);
     } catch (error) {
       console.error(error);
