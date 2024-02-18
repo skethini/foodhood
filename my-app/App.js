@@ -4,11 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { StyleSheet } from 'react-native';
 
-// Adjust imports based on your file structure
+// Screen Imports
 import HomeScreen from './screens/home.screen';
 import LoginScreen from './screens/login.screen';
 import SignUpScreen from './screens/SignUp';
-import { auth } from './firebaseConfig'; // Ensure this import matches your Firebase config file
+import CreateProfileScreen from './screens/CreateProfileScreen';
+import { auth } from './firebaseConfig';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,22 +17,20 @@ export default function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
       setIsSignedIn(!!user);
     });
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
   return (
     <NavigationContainer>
       <Stack.Navigator>
         {isSignedIn ? (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
-            {/* Add other screens for signed-in users here */}
-          </>
+          // Stack Navigator for Signed In Users
+          <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
         ) : (
-          // These screens are accessible when the user is not signed in
+          // Stack Navigator for Authentication Screens
           <>
             <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login' }} />
             <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Sign Up' }} />
