@@ -17,7 +17,7 @@ const Profile = ({ userId }) => {
         console.log("No such document!");
       }
     };
-
+    
     fetchUserProfile();
   }, [userId]);
 
