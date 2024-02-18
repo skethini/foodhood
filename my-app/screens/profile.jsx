@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { doc, getDoc } from "firebase/firestore";
-import { db } from '../firebaseConfig'; // Import the Firestore instance
+import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
-const Profile = ({ userId }) => {
-  const [profile, setProfile] = useState(null);
+import Post from '../components/post.component';
+import Button from '../components/button.component';
+import { getAuth, signOut } from 'firebase/auth';
+
+
+const HomeScreen = ({ navigation }) => {
+  const [posts, setPosts] = useState([]);
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -21,44 +26,34 @@ const Profile = ({ userId }) => {
     fetchUserProfile();
   }, [userId]);
 
+  if (!profile) {
+    return <Text>Loading profile...</Text>;
+  }
 
   return (
     <View style={styles.container}>
-      {profile && profile.imageUrl && (
+      {profile.imageUrl && (
         <Image source={{ uri: profile.imageUrl }} style={styles.profileImage} />
       )}
-      {profile && profile.name && (
-        <Text style={styles.name}>{profile.name}</Text>
-      )}
-      {profile && profile.bio && (
-        <Text style={styles.bio}>{profile.bio}</Text>
-      )}
+      <Text style={styles.name}>{profile.name}</Text>
+      <Text style={styles.bio}>{profile.bio}</Text>
     </View>
   );
 };
 
+export default HomeScreen;
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    height: '100%',
   },
-  profileImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    marginBottom: 20,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-  bio: {
-    fontSize: 16,
-    textAlign: 'center',
+  button: {
+    backgroundColor: '#ccc',
+    padding: 10,
+    borderRadius: 15,
+    margin: 10,
   },
 });
-
-export default Profile;
