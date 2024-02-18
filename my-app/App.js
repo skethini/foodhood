@@ -30,13 +30,14 @@ export default function App() {
           // Stack Navigator for Signed In Users
           <>
           <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Chat' }} />
+          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
           </>
         ) : (
           // Stack Navigator for Authentication Screens
           <>
             <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Login' }} />
             <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'Sign Up' }} />
-            <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+            {/* <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} /> */}
 
           </>
         )}

@@ -44,6 +44,7 @@ const ChatScreen = ({ navigation }) => {
 
   const handleSend = async () => {
     if (inputText.trim() && currentUser) {
+      console.log(currentUserProfile.name);
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
         sender: currentUser.email,
