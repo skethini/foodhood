@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet, KeyboardAvoidingView, Button } from 'react-native';
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth'; // Assuming Firebase Authentication is used
+import { getAuth, signOut } from 'firebase/auth'; // Import signOut for logout functionality
 
-const ChatScreen = () => {
+const ChatScreen = ({ navigation }) => {
   const [inputText, setInputText] = useState('');
   const [messages, setMessages] = useState([]);
   const db = getFirestore();
@@ -29,7 +29,7 @@ const ChatScreen = () => {
     if (inputText.trim()) {
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
-        sender: currentUser.email, // Displaying the email as the sender
+        sender: currentUser.email,
         groupId: 'your-group-id',
         timestamp: new Date(),
       });
@@ -37,19 +37,28 @@ const ChatScreen = () => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigation.navigate('Login'); // Make sure 'Login' matches the name used in your Stack.Navigator
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
+      <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
       <FlatList
-        inverted // Invert the list to start from the bottom
+        inverted
         data={messages}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.messageBubble(item.sender === currentUser.email)}>
-            <Text style={styles.sender}>{item.sender}</Text>
             <Text style={styles.messageText}>{item.text}</Text>
-            <Text style={styles.timestamp}>{new Date(item.timestamp.toDate()).toLocaleTimeString()}</Text>
           </View>
         )}
+        contentContainerStyle={styles.messagesList}
       />
       <View style={styles.inputContainer}>
         <TextInput
@@ -62,18 +71,26 @@ const ChatScreen = () => {
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
+// Adjust styles as necessary
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
+  messagesList: {
+    padding: 10,
+    justifyContent: 'flex-end',
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    backgroundColor: '#fff',
   },
   input: {
     flex: 1,
@@ -95,26 +112,13 @@ const styles = StyleSheet.create({
   },
   messageBubble: isCurrentUser => ({
     backgroundColor: isCurrentUser ? '#007bff' : '#f1f0f0',
-    borderRadius: 20,
     padding: 10,
+    borderRadius: 20,
     marginVertical: 4,
-    marginRight: isCurrentUser ? 0 : 50,
-    marginLeft: isCurrentUser ? 50 : 0,
     alignSelf: isCurrentUser ? 'flex-end' : 'flex-start',
   }),
-  sender: {
-    fontWeight: 'bold',
-    color: '#fff',
-  },
   messageText: {
-    marginTop: 4,
     color: '#fff',
-  },
-  timestamp: {
-    marginTop: 4,
-    fontSize: 10,
-    color: '#fff',
-    alignSelf: 'flex-end',
   },
 });
 
