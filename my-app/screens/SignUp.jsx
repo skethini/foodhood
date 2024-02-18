@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, Alert, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
 import { useNavigation } from '@react-navigation/native';
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword } from 'firebase/auth';
+import { User } from 'firebase/auth';
+import { Auth } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+
 
 export default function SignUpAndCreateProfile() {
   const navigation = useNavigation();
@@ -24,7 +29,7 @@ export default function SignUpAndCreateProfile() {
       quality: 1,
     });
 
-    if (!result.cancelled) {
+    if (!result.canceled) {
       setImage(result.uri);
     }
   };
@@ -44,9 +49,12 @@ export default function SignUpAndCreateProfile() {
 
   const handleProfileSetup = async () => {
     try {
-      const userUid = "your_user_uid"; // Replace with actual user UID from your auth flow
+
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const userId = user.uid;
       const storage = getStorage();
-      const imagePath = `profileImages/${userUid}`;
+      const imagePath = 'profileImages/${userUid}';
       const storageRef = ref(storage, imagePath);
       const imgResponse = await fetch(image);
       const imgBlob = await imgResponse.blob();
