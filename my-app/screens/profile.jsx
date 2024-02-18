@@ -7,8 +7,6 @@ import Post from '../components/post.component';
 import Button from '../components/button.component';
 import { getAuth, signOut } from 'firebase/auth';
 
-
-
 const Profile = ({ userId, navigation }) => {
   const [profile, setProfile] = useState(null);
   const auth = getAuth();
