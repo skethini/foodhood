@@ -9,6 +9,7 @@ import ProfileScreen from './screens/profile';
 import LoginScreen from './screens/login.screen';
 import SignUpScreen from './screens/SignUp';
 import ChatScreen from './screens/chat.screen';
+import MediaScreen from './screens/media'
 import { auth } from './firebaseConfig';
 
 const Stack = createNativeStackNavigator();
@@ -31,6 +32,8 @@ export default function App() {
           <>
           <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Chat' }} />
           <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profile' }} />
+          <Stack.Screen name="Media" component={MediaScreen} options={{ title: 'Media' }} />
+
           </>
         ) : (
           // Stack Navigator for Authentication Screens

@@ -43,6 +43,8 @@ const Profile = ({ userId, navigation }) => {
     <Text>Home Screen</Text>
       <Button title="Logout" onPress={handleLogout} color="#ff5c5c" style={styles.button}/>
       <Button
+        title="Go to Media Page" onPress={() => navigation.navigate('Media')} style={styles.button}/>
+      <Button
         title="Go to Chat" onPress={() => navigation.navigate('Chat')} style={styles.button}/>
       {profile && profile.imageUrl && (
         <Image source={{ uri: profile.imageUrl }} style={styles.profileImage} />
@@ -63,6 +65,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+  },
+  button: {
+    backgroundColor: 'sagegreen',
   },
   profileImage: {
     width: 200,
