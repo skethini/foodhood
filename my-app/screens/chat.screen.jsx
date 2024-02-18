@@ -63,6 +63,18 @@ const ChatScreen = ({ navigation }) => {
     }
   };
 
+  // Inside the ChatScreen component
+const handleLogout = async () => {
+  try {
+    await signOut(auth);
+    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
+  } catch (error) {
+    console.error("Logout error:", error);
+    Alert.alert("Logout Error", error.message);
+  }
+};
+
+
   const handleSendRequest = async () => {
     if (item.trim() && quantity.trim() && currentUser) {
       await addDoc(collection(db, 'groupMessages'), {
@@ -100,7 +112,7 @@ const ChatScreen = ({ navigation }) => {
     }
   };
 
-  const renderMessageItem = ({ item }) => {
+  const renderMessageItem = ({ item, index }) => {
     if (item.type === 'action') {
       return (
         <View style={styles.messageContainer}>
@@ -126,32 +138,22 @@ const ChatScreen = ({ navigation }) => {
       );
     }
     const isCurrentUser = item.sender === currentUser.email;
+    const isFirstInGroup = index === 0 || messages[index - 1].sender !== item.sender;
     return (
       <View style={[styles.messageContainer, isCurrentUser ? styles.messageRight : styles.messageLeft]}>
-        {!isCurrentUser && item.senderProfilePic && (
+        {isFirstInGroup && !isCurrentUser && item.senderProfilePic && (
           <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
         )}
         <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
-          {!isCurrentUser && <Text style={styles.senderName}>{item.senderName}</Text>}
+          {!isCurrentUser && isFirstInGroup && <Text style={styles.senderName}>{item.senderName}</Text>}
           <Text style={styles.messageText}>{item.text}</Text>
         </View>
-        {isCurrentUser && currentUserProfile.imageUrl && (
+        {isCurrentUser && isFirstInGroup && currentUserProfile.imageUrl && (
           <Image source={{ uri: currentUserProfile.imageUrl }} style={styles.profilePic} />
         )}
       </View>
     );
   };
-  // Inside the ChatScreen component
-const handleLogout = async () => {
-  try {
-    await signOut(auth);
-    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
-  } catch (error) {
-    console.error("Logout error:", error);
-    Alert.alert("Logout Error", error.message);
-  }
-};
-
 
   const renderRequestModal = () => (
     <Modal
@@ -185,6 +187,7 @@ const handleLogout = async () => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
+      {renderRequestModal()}
       <FlatList
         data={messages}
         keyExtractor={item => item.id}
@@ -244,20 +247,22 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   profilePic: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     marginRight: 8,
+    marginTop: 6,
   },
   messageBubble: {
     flex: 1,
     backgroundColor: '#f1f0f0',
-    padding: 10,
-    borderRadius: 20,
+    padding: 8,
+    borderRadius: 15,
+    maxWidth: '70%', // Adjust maximum width of the message bubble
   },
   currentUserBubble: {
     backgroundColor: '#007bff',
@@ -303,13 +308,15 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   messagesList: {
-    paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
   },
   acceptButton: {
     backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 20,
+    padding: 8,
+    borderRadius: 15,
     marginRight: 8,
+    marginTop: 6,
   },
   acceptButtonDisabled: {
     backgroundColor: '#ccc',
