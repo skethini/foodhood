@@ -4,9 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 
 import Post from '../components/post.component';
 import Button from '../components/button.component';
+import { getAuth, signOut } from 'firebase/auth';
+
 
 const HomeScreen = ({ navigation }) => {
   const [posts, setPosts] = useState([]);
+  const auth = getAuth();
 
   useEffect(() => {
     fetch('https://jsonplaceholder.typicode.com/posts')
@@ -15,14 +18,25 @@ const HomeScreen = ({ navigation }) => {
       .catch((error) => console.error(error));
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Logout Error", error.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text>Home Screen</Text>
-      <Button
-        title='Go to Details'
-        onPress={() => navigation.navigate('Details')}
+      <Button title="Logout" onPress={handleLogout} color="#ff5c5c" style={styles.button}/>
+      {/* <Button
+        title='Go to Chat'
+        onPress={() => navigation.navigate('Chat')}
         style={styles.button}
-      />
+      /> */}
       <FlatList 
         data={posts}
         renderItem={({ item }) => <Post title={item.title} body={item.body} />}
@@ -34,6 +48,16 @@ const HomeScreen = ({ navigation }) => {
 };
 
 export default HomeScreen;
+
+const handleLogout = async () => {
+  try {
+    await signOut(auth);
+    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
+  } catch (error) {
+    console.error("Logout error:", error);
+    Alert.alert("Logout Error", error.message);
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
