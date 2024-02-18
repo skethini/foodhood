@@ -104,7 +104,6 @@ const ChatScreen = ({ navigation }) => {
     if (item.type === 'action') {
       return (
         <View style={styles.messageContainer}>
-          {/* Add logic to handle action messages differently if needed */}
           <Text style={styles.messageText}>{item.text}</Text>
         </View>
       );
@@ -112,6 +111,7 @@ const ChatScreen = ({ navigation }) => {
       const isAccepted = item.acceptedBy && item.acceptedBy.includes(currentUser.uid);
       return (
         <View style={styles.messageContainer}>
+          
           {!isAccepted && (
             <TouchableOpacity
               onPress={() => handleAcceptRequest(item.id)}
@@ -183,7 +183,8 @@ const handleLogout = async () => {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
+      <Button
+        title="Go to Profile" onPress={() => navigation.navigate('Profile')} style={styles.button}/>
       {renderRequestModal()}
       <FlatList
         data={messages}
