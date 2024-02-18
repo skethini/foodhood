@@ -3,8 +3,15 @@ import { View, Text, Image, StyleSheet } from 'react-native';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from '../firebaseConfig'; // Import the Firestore instance
 
+import Post from '../components/post.component';
+import Button from '../components/button.component';
+import { getAuth, signOut } from 'firebase/auth';
+
+
+
 const Profile = ({ userId }) => {
   const [profile, setProfile] = useState(null);
+  const auth = getAuth();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -21,9 +28,22 @@ const Profile = ({ userId }) => {
     fetchUserProfile();
   }, [userId]);
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
+    } catch (error) {
+      console.error("Logout error:", error);
+      Alert.alert("Logout Error", error.message);
+    }
+  };
 
   return (
     <View style={styles.container}>
+    <Text>Home Screen</Text>
+      <Button title="Logout" onPress={handleLogout} color="#ff5c5c" style={styles.button}/>
+      <Button
+        title="Go to Chat" onPress={() => navigation.navigate('Chat')} style={styles.button}/>
       {profile && profile.imageUrl && (
         <Image source={{ uri: profile.imageUrl }} style={styles.profileImage} />
       )}

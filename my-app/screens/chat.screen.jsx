@@ -81,7 +81,8 @@ const ChatScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
+      <Button title="Go to Profile" onPres={navigation.navigate('Profile')}/>
+      {/* <Button title="Logout" onPress={handleLogout} color="#ff5c5c" /> */}
       <FlatList
         data={messages}
         keyExtractor={item => item.id}
