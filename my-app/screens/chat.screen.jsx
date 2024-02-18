@@ -185,7 +185,6 @@ const handleLogout = async () => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
-      {renderRequestModal()}
       <FlatList
         data={messages}
         keyExtractor={item => item.id}
