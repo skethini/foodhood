@@ -44,7 +44,13 @@ const ChatScreen = ({ navigation }) => {
 
   const handleSend = async () => {
     if (inputText.trim() && currentUser) {
-      console.log(currentUserProfile.name);
+      const nameIn = currentUserProfile.name;
+      const imageUr = currentUserProfile.imageUrl;
+      if (currentUserProfile == undefined) {
+        nameIn = "default name";
+        imageUr = "";
+      }
+      console.log(currentUserProfile);
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
         sender: currentUser.email,
@@ -71,20 +77,22 @@ const ChatScreen = ({ navigation }) => {
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
       <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
       <FlatList
-        inverted
         data={messages}
         keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.messageContainer}>
-            {item.senderProfilePic && (
-              <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
-            )}
-            <View style={styles.messageBubble(item.sender === currentUser.email)}>
-              <Text style={styles.senderName}>{item.senderName}</Text>
-              <Text style={styles.messageText}>{item.text}</Text>
+        renderItem={({ item }) => {
+          const isCurrentUser = item.sender === currentUser.email;
+          return (
+            <View style={[styles.messageContainer, isCurrentUser ? styles.messageRight : styles.messageLeft]}>
+              {item.senderProfilePic && (
+                <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
+              )}
+              <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
+                <Text style={styles.senderName}>{item.senderName}</Text>
+                <Text style={styles.messageText}>{item.text}</Text>
+              </View>
             </View>
-          </View>
-        )}
+          );
+        }}
         contentContainerStyle={styles.messagesList}
       />
       <View style={styles.inputContainer}>

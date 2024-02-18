@@ -9,9 +9,6 @@ import { User } from 'firebase/auth';
 import { Auth } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
-// let storage = Storage.storage()
-// let storageRef = storage.reference()
-
 export default function SignUpAndCreateProfile() {
   const navigation = useNavigation();
   const [step, setStep] = useState(1);
@@ -67,9 +64,12 @@ export default function SignUpAndCreateProfile() {
       await uploadBytes(storageRef, imgBlobs);
       const imageUrl = await getDownloadURL(storageRef);
       await setDoc(doc(getFirestore(), "users", userId), {
-        name,
+        name, 
+        email,
         bio,
         imageUrl,
+        zipCode,
+
       }, { merge: true });
 
       Alert.alert("Profile Created", "Your profile has been successfully created!", [

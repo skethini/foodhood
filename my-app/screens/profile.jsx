@@ -1,22 +1,58 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { View, Text, Image, StyleSheet, Button } from 'react-native';
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { db } from '../firebaseConfig'; // Import the Firestore instance
+import { UserInfo } from 'firebase/auth';
 
 import Post from '../components/post.component';
 import Button from '../components/button.component';
 import { getAuth, signOut } from 'firebase/auth';
 
-
-const HomeScreen = ({ navigation }) => {
+const Profile = ({ userId }) => {
+  
+  const [items, setItems] = useState([]);
+  const [newItem, setNewItem] = useState('');
+  const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const auth = getAuth();
 
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/posts')
-      .then((response) => response.json())
-      .then((json) => setPosts(json))
-      .catch((error) => console.error(error));
-  }, []);
+    const fetchUserProfile = async () => {
+      const docRef = doc(db, "users", userId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProfile(docSnap.data());
+      } else {
+        console.log("No such document!");
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]);
+
+  if (!profile) {
+    return <Text>Loading profile...</Text>;
+  }
+
+  const handleInputChange = (event) => {
+    setNewItem(onchange.target.value);
+  };
+
+  const handleAddItem = async () => {
+    try {
+      await setDoc(doc(getFirestore(), "inventories", userId), {
+        userId,
+        items,
+      }, { merge: true });
+      setMyList([...myList, newItem]);
+      setNewItem('');
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Add Item Error", error.message);
+    }
+  }
+
 
   const handleLogout = async () => {
     try {
@@ -37,29 +73,49 @@ const HomeScreen = ({ navigation }) => {
         onPress={() => navigation.navigate('Chat')}
         style={styles.button}
       /> */}
-      <FlatList 
-        data={posts}
-        renderItem={({ item }) => <Post title={item.title} body={item.body} />}
-        keyExtractor={(item) => item.id.toString()}
+      {profile.imageUrl && (
+        <Image source={{ uri: profile.imageUrl }} style={styles.profileImage} />
+      )}
+      <Text style={styles.name}>{profile.name}</Text>
+      <Text style={styles.bio}>{profile.bio}</Text>
+      <Text style={styles.title}>Add to Inventory</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="New Item"
+        value={email}
+        onChangeText={setEmail}
       />
-      <StatusBar style='auto' />
+      <Button title="Add Item" onPress={handleAddItem} />
     </View>
+
   );
 };
 
-export default HomeScreen;
-
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
+    padding: 20,
   },
-  button: {
-    backgroundColor: '#ccc',
-    padding: 10,
-    borderRadius: 15,
-    margin: 10,
+  profileImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    marginBottom: 20,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  bio: {
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
+
+
+
+export default Profile;
+
