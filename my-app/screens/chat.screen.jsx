@@ -44,24 +44,30 @@ const ChatScreen = ({ navigation }) => {
 
   const handleSend = async () => {
     if (inputText.trim() && currentUser) {
-      const nameIn = currentUserProfile.name;
-      const imageUr = currentUserProfile.imageUrl;
-      if (currentUserProfile == undefined) {
-        nameIn = "default name";
-        imageUr = "";
+      let nameIn = "default name";
+      let imageUr = "";
+      
+      if (currentUserProfile && currentUserProfile.name) {
+        nameIn = currentUserProfile.name;
       }
+      
+      if (currentUserProfile && currentUserProfile.imageUrl) {
+        imageUr = currentUserProfile.imageUrl;
+      }
+  
       console.log(currentUserProfile);
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
         sender: currentUser.email,
-        senderName: currentUserProfile.name, // Use the fetched name
-        senderProfilePic: currentUserProfile.imageUrl, // Use the fetched profile picture URL
+        senderName: nameIn,
+        senderProfilePic: imageUr,
         groupId: 'your-group-id',
         timestamp: new Date(),
       });
       setInputText('');
     }
   };
+  
 
   const handleLogout = async () => {
     try {
@@ -171,4 +177,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatScreen;
+export default ChatScreen

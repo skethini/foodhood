@@ -21,17 +21,18 @@ const Profile = ({ userId }) => {
     fetchUserProfile();
   }, [userId]);
 
-  if (!profile) {
-    return <Text>Loading profile...</Text>;
-  }
 
   return (
     <View style={styles.container}>
-      {profile.imageUrl && (
+      {profile && profile.imageUrl && (
         <Image source={{ uri: profile.imageUrl }} style={styles.profileImage} />
       )}
-      <Text style={styles.name}>{profile.name}</Text>
-      <Text style={styles.bio}>{profile.bio}</Text>
+      {profile && profile.name && (
+        <Text style={styles.name}>{profile.name}</Text>
+      )}
+      {profile && profile.bio && (
+        <Text style={styles.bio}>{profile.bio}</Text>
+      )}
     </View>
   );
 };
