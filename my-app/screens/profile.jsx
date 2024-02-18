@@ -9,7 +9,7 @@ import { getAuth, signOut } from 'firebase/auth';
 
 
 
-const Profile = ({ userId }) => {
+const Profile = ({ userId, navigation }) => {
   const [profile, setProfile] = useState(null);
   const auth = getAuth();
 
