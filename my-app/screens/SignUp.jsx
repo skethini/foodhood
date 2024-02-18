@@ -9,6 +9,8 @@ import { User } from 'firebase/auth';
 import { Auth } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 
+// let storage = Storage.storage()
+// let storageRef = storage.reference()
 
 export default function SignUpAndCreateProfile() {
   const navigation = useNavigation();
@@ -54,14 +56,16 @@ export default function SignUpAndCreateProfile() {
       const user = userCredential.user;
       const userId = user.uid;
       const storage = getStorage();
-      const imagePath = `profileImages/${userId}`;
+      const imagePath = `profilePics/${userId}.jpg`;
       const storageRef = ref(storage, imagePath);
       const imgResponse = await fetch(image);
-      const imgBlob = await imgResponse.blob();
-      
-      await uploadBytes(storageRef, imgBlob);
-      const imageUrl = await getDownloadURL(storageRef);
+      const imgBlobs = await imgResponse.blob();
 
+      //const imgBlobs = await FileSystem.readAsStringAsync(image, { encoding:  FileSystem.EncodingType.Base64}); // FileSystem.EncodingType.Base64
+      //const ingBlobForUpload = await fetch(`data:image/jpeg;base64,${imgBlob}`).them((res) => res.blob());
+      
+      await uploadBytes(storageRef, imgBlobs);
+      const imageUrl = await getDownloadURL(storageRef);
       await setDoc(doc(getFirestore(), "users", userId), {
         name,
         bio,
