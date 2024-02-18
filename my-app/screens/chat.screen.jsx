@@ -44,7 +44,13 @@ const ChatScreen = ({ navigation }) => {
 
   const handleSend = async () => {
     if (inputText.trim() && currentUser) {
-      console.log(currentUserProfile.name);
+      const nameIn = currentUserProfile.name;
+      const imageUr = currentUserProfile.imageUrl;
+      if (currentUserProfile == undefined) {
+        nameIn = "default name";
+        imageUr = "";
+      }
+      console.log(currentUserProfile);
       await addDoc(collection(db, 'groupMessages'), {
         text: inputText,
         sender: currentUser.email,

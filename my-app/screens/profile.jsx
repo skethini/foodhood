@@ -1,51 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { doc, getDoc } from "firebase/firestore";
+import { db } from '../firebaseConfig'; // Import the Firestore instance
 
-import Post from '../components/post.component';
-import Button from '../components/button.component';
-
-const HomeScreen = ({ navigation }) => {
-  const [posts, setPosts] = useState([]);
+const Profile = ({ userId }) => {
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/posts')
-      .then((response) => response.json())
-      .then((json) => setPosts(json))
-      .catch((error) => console.error(error));
-  }, []);
+    const fetchUserProfile = async () => {
+      const docRef = doc(db, "users", userId);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setProfile(docSnap.data());
+      } else {
+        console.log("No such document!");
+      }
+    };
+
+    fetchUserProfile();
+  }, [userId]);
+
+  if (!profile) {
+    return <Text>Loading profile...</Text>;
+  }
 
   return (
     <View style={styles.container}>
-      <Text>Home Screen</Text>
-      <Button
-        title='Go to Details'
-        onPress={() => navigation.navigate('Details')}
-        style={styles.button}
-      />
-      <FlatList 
-        data={posts}
-        renderItem={({ item }) => <Post title={item.title} body={item.body} />}
-        keyExtractor={(item) => item.id.toString()}
-      />
-      <StatusBar style='auto' />
+      {profile.imageUrl && (
+        <Image source={{ uri: profile.imageUrl }} style={styles.profileImage} />
+      )}
+      <Text style={styles.name}>{profile.name}</Text>
+      <Text style={styles.bio}>{profile.bio}</Text>
     </View>
   );
 };
 
-export default HomeScreen;
-
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100%',
+    padding: 20,
   },
-  button: {
-    backgroundColor: '#ccc',
-    padding: 10,
-    borderRadius: 15,
-    margin: 10,
+  profileImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    marginBottom: 20,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  bio: {
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
+
+export default Profile;
