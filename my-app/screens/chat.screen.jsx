@@ -141,16 +141,6 @@ const ChatScreen = ({ navigation }) => {
       </View>
     );
   };
-  // Inside the ChatScreen component
-const handleLogout = async () => {
-  try {
-    await signOut(auth);
-    navigation.navigate('Login'); // Ensure 'Login' matches the name used in your Stack.Navigator
-  } catch (error) {
-    console.error("Logout error:", error);
-    Alert.alert("Logout Error", error.message);
-  }
-};
 
   const renderRequestModal = () => (
     <Modal
@@ -183,7 +173,6 @@ const handleLogout = async () => {
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.container}>
-      <Button title="Logout" onPress={handleLogout} color="#ff5c5c" />
       {renderRequestModal()}
       <FlatList
         data={messages}
