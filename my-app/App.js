@@ -5,10 +5,10 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { StyleSheet } from 'react-native';
 
 // Screen Imports
-import HomeScreen from './screens/home.screen';
+import ProfileScreen from './screens/profile';
 import LoginScreen from './screens/login.screen';
 import SignUpScreen from './screens/SignUp';
-import CreateProfileScreen from './screens/CreateProfileScreen';
+import ChatScreen from './screens/chat.screen';
 import { auth } from './firebaseConfig';
 
 const Stack = createNativeStackNavigator();
@@ -28,7 +28,9 @@ export default function App() {
       <Stack.Navigator>
         {isSignedIn ? (
           // Stack Navigator for Signed In Users
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
+          <>
+          <Stack.Screen name="Chat" component={ChatScreen} options={{ title: 'Chat' }} />
+          </>
         ) : (
           // Stack Navigator for Authentication Screens
           <>
