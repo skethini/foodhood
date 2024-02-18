@@ -3,6 +3,7 @@ import {
   View,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   FlatList,
   Text,
   KeyboardAvoidingView,
@@ -14,7 +15,7 @@ import {
   StyleSheet
 } from 'react-native';
 import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
-import { getAuth, signOut } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 const ChatScreen = ({ navigation }) => {
   const [inputText, setInputText] = useState('');
@@ -29,6 +30,20 @@ const ChatScreen = ({ navigation }) => {
   const auth = getAuth();
   const currentUser = auth.currentUser;
 
+  const [acceptedRequests, setAcceptedRequests] = useState({});
+
+  const handleAcceptRequest = async (messageId) => {
+  const messageRef = doc(db, 'groupMessages', messageId);
+  await updateDoc(messageRef, {
+    acceptedBy: arrayUnion(auth.currentUser.uid)
+  }).then(() => {
+    // Update local state to reflect the acceptance
+    setAcceptedRequests(prevState => ({ ...prevState, [messageId]: true }));
+    Alert.alert("Request Accepted", "You have accepted the request.");
+  }).catch((error) => {
+    console.error("Error updating document: ", error);
+  });
+};
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (currentUser) {
@@ -97,33 +112,31 @@ const ChatScreen = ({ navigation }) => {
     }
   };
 
-  const handleAcceptRequest = async (id) => {
-    const messageRef = doc(db, 'groupMessages', id);
-    const messageDoc = await getDoc(messageRef);
-    if (messageDoc.exists()) {
-      const data = messageDoc.data();
-      if (!data.acceptedBy.includes(currentUser.uid)) {
-        await updateDoc(messageRef, {
-          acceptedBy: arrayUnion(currentUser.uid)
-        });
-        console.log(`Request with id ${id} accepted by ${currentUser.uid}`);
-      } else {
-        console.log(`Request with id ${id} already accepted by ${currentUser.uid}`);
-      }
-    }
-  };
-
   const renderMessageItem = ({ item }) => {
     const isCurrentUser = item.sender === currentUser.email;
-    const messageAlignment = isCurrentUser ? styles.messageRight : styles.messageLeft;
+    const hasAccepted = item.acceptedBy?.includes(currentUser.uid) || acceptedRequests[item.id];
+  
     return (
-      <View style={[styles.messageContainer, messageAlignment]}>
+      <View style={[styles.messageContainer, isCurrentUser ? styles.messageRight : styles.messageLeft]}>
+        {!isCurrentUser && item.senderProfilePic && (
+          <TouchableOpacity onPress={() => navigation.navigate('UserProfile', { userId: item.senderId })}>
+            <Image source={{ uri: item.senderProfilePic }} style={styles.profilePic} />
+          </TouchableOpacity>
+        )}
         <View style={[styles.messageBubble, isCurrentUser ? styles.currentUserBubble : styles.otherUserBubble]}>
           <Text style={styles.messageText}>{item.text}</Text>
+          {item.type === 'request' && !hasAccepted ? (
+            <TouchableOpacity onPress={() => handleAcceptRequest(item.id)} style={styles.acceptButton}>
+              <Text style={styles.acceptButtonText}>Accept</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.acceptedText}>Request Accepted</Text> // Indicate the request is accepted
+          )}
         </View>
       </View>
     );
   };
+  
 
   const renderRequestModal = () => (
     <Modal
@@ -132,24 +145,28 @@ const ChatScreen = ({ navigation }) => {
       visible={modalVisible}
       onRequestClose={() => setModalVisible(!modalVisible)}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.modalView}>
-          <TextInput
-            placeholder="Item"
-            value={item}
-            onChangeText={setItem}
-            style={styles.modalInput}
-          />
-          <TextInput
-            placeholder="Quantity"
-            value={quantity}
-            keyboardType="numeric"
-            onChangeText={setQuantity}
-            style={styles.modalInput}
-          />
-          <Button title="Send Request" onPress={handleSendRequest} />
+      <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalLabel}>Item</Text>
+            <TextInput
+              placeholder="Item"
+              value={item}
+              onChangeText={setItem}
+              style={styles.modalInput}
+            />
+            <Text style={styles.modalLabel}>Quantity</Text>
+            <TextInput
+              placeholder="Quantity"
+              value={quantity}
+              keyboardType="numeric"
+              onChangeText={setQuantity}
+              style={styles.modalInput}
+            />
+            <Button title="Send Request" onPress={handleSendRequest} />
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 
